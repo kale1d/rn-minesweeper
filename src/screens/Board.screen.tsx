@@ -12,7 +12,15 @@ export const Board: React.FC<Props> = (Props) => {
 
   const renderCells = (): React.ReactNode => {
     return cells.map((row, rowIndex) =>
-      row.map((col, colIndex) => <Cell key={`${rowIndex}-${colIndex}`} />),
+      row.map((col, colIndex) => (
+        <Cell
+          row={rowIndex}
+          col={colIndex}
+          state={col.state}
+          value={col.value}
+          key={`${rowIndex}-${colIndex}`}
+        />
+      )),
     );
   };
   return (
