@@ -13,7 +13,7 @@ export enum CellValue {
   six,
   seven,
   eight,
-  bomb
+  mine
 }
 
 export enum CellState {

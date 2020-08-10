@@ -7,7 +7,11 @@ type DisplayProps = {
 export const NumberDisplay: React.FC<DisplayProps> = ({value}) => {
   return (
     <View style={styles.numberDisplay}>
-      <Text style={styles.text}>{value.toString().padStart(3, '0')}</Text>
+      <Text style={styles.text}>
+        {value < 0
+          ? `-${Math.abs(value).toString().padStart(2, '0')}`
+          : value.toString().padStart(3, '0')}
+      </Text>
     </View>
   );
 };

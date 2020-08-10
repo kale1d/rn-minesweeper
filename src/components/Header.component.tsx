@@ -2,13 +2,20 @@ import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {NumberDisplay} from './NumberDisplay.component';
 import {Face} from './Face.component';
+import {FaceEnum} from '../models/Face.model';
 
-const Header: React.FC = () => {
+type HeaderProps = {
+  face: FaceEnum;
+  time: number;
+  mines: number;
+  onRestart: () => void;
+};
+const Header: React.FC<HeaderProps> = ({face, time, mines, onRestart}) => {
   return (
     <View style={styles.header}>
-      <NumberDisplay value={0} />
-      <Face />
-      <NumberDisplay value={23} />
+      <NumberDisplay value={mines} />
+      <Face onRestart={onRestart} face={face} />
+      <NumberDisplay value={time} />
     </View>
   );
 };

@@ -5,11 +5,12 @@ import {
   Text,
   TouchableWithoutFeedback,
   Image,
+  GestureResponderEvent,
 } from 'react-native';
 import {width, height} from '../utils/constants';
 import {CellState, CellValue} from '../models/Cell.model';
 
-const bomb = require('./../assets/images/bomb.png');
+const mine = require('./../assets/images/bomb.png');
 const flag = require('./../assets/images/flag.png');
 
 type CellProps = {
@@ -17,17 +18,32 @@ type CellProps = {
   col: number;
   state: CellState;
   value: CellValue;
+  pressed: CellState;
+  onCellPressIn: () => void;
+  onCellPressOut: () => void;
+  onOpenCell(
+    rowParam: number,
+    colParam: number,
+  ): (e: GestureResponderEvent) => void;
+  onLongPressCell(
+    rowParam: number,
+    colParam: number,
+  ): (e: GestureResponderEvent) => void;
 };
-export const Cell: React.FC<CellProps> = ({row, col, state, value}) => {
-  const [pressed, setPressed] = useState<number>(0);
+export const Cell: React.FC<CellProps> = ({
+  row,
+  col,
+  state,
+  value,
+  pressed,
+  onCellPressIn,
+  onCellPressOut,
+  onOpenCell,
+  onLongPressCell,
+}) => {
   const cellByKindStyle: any[] = [styles.cell];
   const textColor: any[] = [styles.text];
 
-  const onOpen = () => {
-    setPressed(CellState.visible);
-    console.log(state);
-    console.log(pressed);
-  };
   if (pressed) cellByKindStyle.push(styles.opened);
   if (value === CellValue.one) textColor.push(styles.blue);
   if (value === CellValue.two) textColor.push(styles.green);
@@ -35,8 +51,8 @@ export const Cell: React.FC<CellProps> = ({row, col, state, value}) => {
 
   const renderCell = (): React.ReactNode => {
     if (state === CellState.visible) {
-      if (value === CellValue.bomb) {
-        return <Image style={{width: 35, height: 35}} source={bomb} />;
+      if (value === CellValue.mine) {
+        return <Image style={{width: 35, height: 35}} source={mine} />;
       } else if (value === CellValue.none) {
         return null;
       }
@@ -47,9 +63,18 @@ export const Cell: React.FC<CellProps> = ({row, col, state, value}) => {
     }
     return null;
   };
+
+  const onLongPress = () => {
+    console.log('looooong');
+  };
+
   return (
     <>
-      <TouchableWithoutFeedback onPress={onOpen}>
+      <TouchableWithoutFeedback
+        onPress={onOpenCell(row, col)}
+        onPressIn={onCellPressIn}
+        onPressOut={onCellPressOut}
+        onLongPress={onLongPressCell(row, col)}>
         <View style={cellByKindStyle}>{renderCell()}</View>
       </TouchableWithoutFeedback>
     </>

@@ -1,17 +1,19 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Image, View, StyleSheet, TouchableOpacity} from 'react-native';
+import {FaceEnum} from '../models/Face.model';
 
-const img = require('./../assets/images/smile.png');
-
-interface Props {}
-export const Face: React.FC<Props> = (Props) => {
+interface FaceProps {
+  face: FaceEnum;
+  onRestart: () => void;
+}
+export const Face: React.FC<FaceProps> = ({face, onRestart}) => {
   const [pressed, setPressed] = useState<boolean>(false);
   const faceStyles: any[] = [styles.container];
 
   return (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={onRestart}>
       <View style={faceStyles}>
-        <Image style={{width: 30, height: 30}} source={img} />
+        <Image style={{width: 30, height: 30}} source={face} />
       </View>
     </TouchableOpacity>
   );
