@@ -3,7 +3,7 @@ import {View, StyleSheet, Text, Dimensions, Alert} from 'react-native';
 import {Cell} from '../components/Cell.component';
 import Header from '../components/Header.component';
 import {CellModel, CellValue, CellState} from '../models/Cell.model';
-import {generateCells} from '../utils/methods';
+import {generateCells, openAdjacentCells} from '../utils/methods';
 import {width, height, MINES} from '../utils/constants';
 import {FaceEnum} from '../models/Face.model';
 
@@ -13,7 +13,6 @@ export const Board: React.FC<Props> = (Props) => {
   const [face, setFace] = useState<FaceEnum>(FaceEnum.smile);
   const [timer, setTimer] = useState<number>(0);
   const [gameStart, setGameStart] = useState<boolean>(false);
-  const [pressedCell, setPressedCell] = useState<CellState>(CellState.open);
   const [mineCounter, setMineCounter] = useState<number>(MINES);
   useEffect(() => {
     if (gameStart && timer < 999) {
@@ -40,11 +39,31 @@ export const Board: React.FC<Props> = (Props) => {
   };
 
   const onOpenCell = (rowParam: number, colParam: number) => () => {
+    let currentBoard = cells.slice();
+    const currentCell = cells[rowParam][colParam];
     //set game start
-    if (!gameStart) setGameStart(true);
+    if (!gameStart) {
+      setGameStart(true);
+    }
+
+    // If cell is flagged or visible don't do anything
+    if ([CellState.flagged, CellState.visible].includes(currentCell.state)) {
+      return;
+    }
+    if (currentCell.value === CellValue.mine) {
+      //Chequear que no haya una bomba al inicio
+    } else if (currentCell.value === CellValue.none) {
+      currentBoard = openAdjacentCells(currentBoard, rowParam, colParam);
+      setCells(currentBoard);
+    } else {
+      currentBoard[rowParam][colParam].state = CellState.visible;
+      console.log(currentBoard);
+      setCells(currentBoard);
+    }
   };
 
   const handleFlag = (rowParam: number, colParam: number) => () => {
+    // Shallow copy of currentCells;
     const currentCells = cells.slice();
     const currentCell = cells[rowParam][colParam];
     if (!gameStart) {
@@ -81,7 +100,6 @@ export const Board: React.FC<Props> = (Props) => {
           onCellPressOut={onFaceChange}
           onOpenCell={onOpenCell}
           onLongPressCell={handleFlag}
-          pressed={pressedCell}
         />
       )),
     );

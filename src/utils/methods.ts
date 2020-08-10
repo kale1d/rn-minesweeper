@@ -1,7 +1,37 @@
-import { CellModel, CellValue, CellState } from "../models/Cell.model";
+import { CellModel, CellValue, CellState, AdjacentCells } from "../models/Cell.model";
 import { MAX_ROWS, MAX_COLS, MINES } from "./constants";
 
 
+const generateAdjacentCells = (cells: CellModel[][], rowParam: number, colParam: number): AdjacentCells => {
+
+  // If row and column are equal to 0 cant be a topLeftCell
+  const topLeftCell = rowParam > 0 && colParam > 0 ? cells[rowParam - 1][colParam - 1] : null;
+  // If row is equal to 0 can't be a topCell
+  const topCell = rowParam > 0 ? cells[rowParam - 1][colParam] : null;
+  // If row is equal to 0 and total number of columns is greater than cols can't be a mine
+  const topRightCell = rowParam > 0 && colParam < (MAX_COLS - 1) ? cells[rowParam - 1][colParam + 1] : null;
+  // If col is equal to 0 can't be a mine on the left
+  const leftCell = colParam > 0 ? cells[rowParam][colParam - 1] : null;
+  // If col is greater than the number of columns can't be a right mine
+  const rightCell = colParam < (MAX_COLS - 1) ? cells[rowParam][colParam + 1] : null;
+  // If the row is greater thant the number of rows and the col is equal to 0 can't be a mine
+  const bottomLeftCell = rowParam < (MAX_ROWS - 1) && colParam > 0 ? cells[rowParam + 1][colParam - 1] : null;
+  // If the row is greater than the number of rows it can't be a mine
+  const bottomCell = rowParam < (MAX_ROWS - 1) ? cells[rowParam + 1][colParam] : null;
+  // If row and column are greater thant the max number of rows and columns can't be a mine
+  const bottomRightCell = rowParam < (MAX_ROWS - 1) && colParam < (MAX_COLS - 1) ? cells[rowParam + 1][colParam + 1] : null;
+
+  return {
+    topLeftCell,
+    topCell,
+    topRightCell,
+    leftCell,
+    rightCell,
+    bottomLeftCell,
+    bottomCell,
+    bottomRightCell
+  }
+}
 /**
  * Creates two dimension array with columns and rows
  * Generates mines randomly
@@ -44,36 +74,105 @@ export const generateCells = (): CellModel[][] => {
       const currentCell = cells[rowIndex][colIndex];
       if (currentCell.value === CellValue.mine) continue;
 
-      let numberOfmines = 0;
+      let numberOfMines = 0;
+      const {
+        topLeftCell,
+        topCell,
+        topRightCell,
+        leftCell,
+        rightCell,
+        bottomLeftCell,
+        bottomCell,
+        bottomRightCell
+      } = generateAdjacentCells(cells, rowIndex, colIndex);
 
-      // If row and column are equal to 0 cant be a topLeftmine
-      const topLeftmine = rowIndex > 0 && colIndex > 0 ? cells[rowIndex - 1][colIndex - 1] : null;
-      // If row is equal to 0 can't be a topmine
-      const topmine = rowIndex > 0 ? cells[rowIndex - 1][colIndex] : null;
-      // If row is equal to 0 and total number of columns is greater than cols can't be a mine
-      const topRightmine = rowIndex > 0 && colIndex < (MAX_COLS - 1) ? cells[rowIndex - 1][colIndex + 1] : null;
-      // If col is equal to 0 can't be a mine on the left
-      const leftmine = colIndex > 0 ? cells[rowIndex][colIndex - 1] : null;
-      // If col is greater than the number of columns can't be a right mine
-      const rightmine = colIndex < (MAX_COLS - 1) ? cells[rowIndex][colIndex + 1] : null;
-      // If the row is greater thant the number of rows and the col is equal to 0 can't be a mine
-      const bottomLeftmine = rowIndex < (MAX_ROWS - 1) && colIndex > 0 ? cells[rowIndex + 1][colIndex - 1] : null;
-      // If the row is greater than the number of rows it can't be a mine
-      const bottommine = rowIndex < (MAX_ROWS - 1) ? cells[rowIndex + 1][colIndex] : null;
-      // If row and column are greater thant the max number of rows and columns can't be a mine
-      const bottomRightmine = rowIndex < (MAX_ROWS - 1) && colIndex < (MAX_COLS - 1) ? cells[rowIndex + 1][colIndex + 1] : null;
+      if (topLeftCell?.value === CellValue.mine) numberOfMines++;
+      if (topCell?.value === CellValue.mine) numberOfMines++;
+      if (topRightCell?.value === CellValue.mine) numberOfMines++;
+      if (leftCell?.value === CellValue.mine) numberOfMines++;
+      if (rightCell?.value === CellValue.mine) numberOfMines++;
+      if (bottomLeftCell?.value === CellValue.mine) numberOfMines++;
+      if (bottomCell?.value === CellValue.mine) numberOfMines++;
+      if (bottomRightCell?.value === CellValue.mine) numberOfMines++;
 
-      if (topLeftmine?.value === CellValue.mine) numberOfmines++;
-      if (topmine?.value === CellValue.mine) numberOfmines++;
-      if (topRightmine?.value === CellValue.mine) numberOfmines++;
-      if (leftmine?.value === CellValue.mine) numberOfmines++;
-      if (rightmine?.value === CellValue.mine) numberOfmines++;
-      if (bottomLeftmine?.value === CellValue.mine) numberOfmines++;
-      if (bottommine?.value === CellValue.mine) numberOfmines++;
-      if (bottomRightmine?.value === CellValue.mine) numberOfmines++;
-
-      if (numberOfmines > 0) cells[rowIndex][colIndex] = { ...currentCell, value: numberOfmines };
+      if (numberOfMines > 0) cells[rowIndex][colIndex] = { ...currentCell, value: numberOfMines };
     }
   }
   return cells;
+}
+
+export const openAdjacentCells = (cells: CellModel[][], rowParam: number, colParam: number): CellModel[][] => {
+  let newCells = cells.slice();
+  const {
+    topLeftCell,
+    topCell,
+    topRightCell,
+    leftCell,
+    rightCell,
+    bottomLeftCell,
+    bottomCell,
+    bottomRightCell
+  } = generateAdjacentCells(cells, rowParam, colParam);
+  newCells[rowParam][colParam].state = CellState.visible;
+
+  // If the value of the cell is none we will run again this function to recursively 
+  // iterates again cells in the next adjacent cell
+  if (topLeftCell?.state === CellState.open && topLeftCell.value !== CellValue.mine) {
+    if (topLeftCell.value === CellValue.none) {
+      newCells = openAdjacentCells(newCells, rowParam - 1, colParam - 1);
+    } else {
+      newCells[rowParam - 1][colParam - 1].state = CellState.visible;
+    }
+  }
+  if (topCell?.state === CellState.open && topCell.value !== CellValue.mine) {
+    if (topCell.value === CellValue.none) {
+      newCells = openAdjacentCells(newCells, rowParam - 1, colParam);
+    } else {
+      newCells[rowParam - 1][colParam].state = CellState.visible;
+    }
+  }
+  if (topRightCell?.state === CellState.open && topRightCell.value !== CellValue.mine) {
+    if (topRightCell.value === CellValue.none) {
+      newCells = openAdjacentCells(newCells, rowParam - 1, colParam + 1);
+    } else {
+      newCells[rowParam - 1][colParam + 1].state = CellState.visible;
+    }
+  }
+  if (leftCell?.state === CellState.open && leftCell.value !== CellValue.mine) {
+    if (leftCell.value === CellValue.none) {
+      newCells = openAdjacentCells(newCells, rowParam, colParam - 1);
+    } else {
+      newCells[rowParam][colParam - 1].state = CellState.visible;
+    }
+  }
+  if (rightCell?.state === CellState.open && rightCell.value !== CellValue.mine) {
+    if (rightCell.value === CellValue.none) {
+      newCells = openAdjacentCells(newCells, rowParam, colParam + 1);
+    } else {
+      newCells[rowParam][colParam + 1].state = CellState.visible;
+    }
+  }
+  if (bottomLeftCell?.state === CellState.open && bottomLeftCell.value !== CellValue.mine) {
+    if (bottomLeftCell.value === CellValue.none) {
+      newCells = openAdjacentCells(newCells, rowParam + 1, colParam - 1);
+    } else {
+      newCells[rowParam + 1][colParam - 1].state = CellState.visible;
+    }
+  }
+  if (bottomCell?.state === CellState.open && bottomCell.value !== CellValue.mine) {
+    if (bottomCell.value === CellValue.none) {
+      newCells = openAdjacentCells(newCells, rowParam + 1, colParam);
+    } else {
+      newCells[rowParam + 1][colParam].state = CellState.visible;
+    }
+  }
+  if (bottomRightCell?.state === CellState.open && bottomRightCell.value !== CellValue.mine) {
+    if (bottomRightCell.value === CellValue.none) {
+      newCells = openAdjacentCells(newCells, rowParam - 1, colParam + 1);
+    } else {
+      newCells[rowParam - 1][colParam + 1].state = CellState.visible;
+    }
+  }
+
+  return newCells;
 }

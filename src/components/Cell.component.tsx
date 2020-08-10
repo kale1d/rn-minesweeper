@@ -18,7 +18,6 @@ type CellProps = {
   col: number;
   state: CellState;
   value: CellValue;
-  pressed: CellState;
   onCellPressIn: () => void;
   onCellPressOut: () => void;
   onOpenCell(
@@ -35,7 +34,6 @@ export const Cell: React.FC<CellProps> = ({
   col,
   state,
   value,
-  pressed,
   onCellPressIn,
   onCellPressOut,
   onOpenCell,
@@ -44,13 +42,13 @@ export const Cell: React.FC<CellProps> = ({
   const cellByKindStyle: any[] = [styles.cell];
   const textColor: any[] = [styles.text];
 
-  if (pressed) cellByKindStyle.push(styles.opened);
   if (value === CellValue.one) textColor.push(styles.blue);
   if (value === CellValue.two) textColor.push(styles.green);
   if (value === CellValue.three) textColor.push(styles.red);
-
+  if (value === CellValue.four) textColor.push(styles.purple);
   const renderCell = (): React.ReactNode => {
     if (state === CellState.visible) {
+      cellByKindStyle.push(styles.opened);
       if (value === CellValue.mine) {
         return <Image style={{width: 35, height: 35}} source={mine} />;
       } else if (value === CellValue.none) {
@@ -62,10 +60,6 @@ export const Cell: React.FC<CellProps> = ({
       return <Image style={{width: 35, height: 35}} source={flag} />;
     }
     return null;
-  };
-
-  const onLongPress = () => {
-    console.log('looooong');
   };
 
   return (
@@ -114,5 +108,8 @@ const styles = StyleSheet.create({
   },
   red: {
     color: 'red',
+  },
+  purple: {
+    color: 'purple',
   },
 });

@@ -7,7 +7,6 @@ interface FaceProps {
   onRestart: () => void;
 }
 export const Face: React.FC<FaceProps> = ({face, onRestart}) => {
-  const [pressed, setPressed] = useState<boolean>(false);
   const faceStyles: any[] = [styles.container];
 
   return (
