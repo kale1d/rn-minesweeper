@@ -1,6 +1,7 @@
-export type CellModel = {
+export interface CellModel {
   value: CellValue;
   state: CellState;
+  selectedBomb?: boolean;
 }
 
 export enum CellValue {
@@ -17,9 +18,10 @@ export enum CellValue {
 }
 
 export enum CellState {
-  open,
-  visible,
-  flagged
+  closed,
+  revealed,
+  flagged,
+  unknown
 }
 
 export interface AdjacentCells {

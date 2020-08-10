@@ -1,5 +1,5 @@
 import { CellModel, CellValue, CellState, AdjacentCells } from "../models/Cell.model";
-import { MAX_ROWS, MAX_COLS, MINES } from "./constants";
+import { MAX_ROWS, MAX_COLS } from "./constants";
 
 
 const generateAdjacentCells = (cells: CellModel[][], rowParam: number, colParam: number): AdjacentCells => {
@@ -36,7 +36,7 @@ const generateAdjacentCells = (cells: CellModel[][], rowParam: number, colParam:
  * Creates two dimension array with columns and rows
  * Generates mines randomly
  */
-export const generateCells = (): CellModel[][] => {
+export const generateCells = (MINES: number): CellModel[][] => {
   //cambiar nombre a Board tiene mas sentido igual al modelo
   const cells: CellModel[][] = [];
   let minesPlaced = 0;
@@ -47,7 +47,7 @@ export const generateCells = (): CellModel[][] => {
     for (let col = 0; col < MAX_COLS; col++) {
       const cell: CellModel = {
         value: CellValue.none,
-        state: CellState.open, // cambiar a open y cambir el nombre de open tambien 
+        state: CellState.closed,
       };
       cells[row].push(cell);
     }
@@ -113,64 +113,64 @@ export const openAdjacentCells = (cells: CellModel[][], rowParam: number, colPar
     bottomCell,
     bottomRightCell
   } = generateAdjacentCells(cells, rowParam, colParam);
-  newCells[rowParam][colParam].state = CellState.visible;
+  newCells[rowParam][colParam].state = CellState.revealed;
 
   // If the value of the cell is none we will run again this function to recursively 
   // iterates again cells in the next adjacent cell
-  if (topLeftCell?.state === CellState.open && topLeftCell.value !== CellValue.mine) {
+  if (topLeftCell?.state === CellState.closed && topLeftCell.value !== CellValue.mine) {
     if (topLeftCell.value === CellValue.none) {
       newCells = openAdjacentCells(newCells, rowParam - 1, colParam - 1);
     } else {
-      newCells[rowParam - 1][colParam - 1].state = CellState.visible;
+      newCells[rowParam - 1][colParam - 1].state = CellState.revealed;
     }
   }
-  if (topCell?.state === CellState.open && topCell.value !== CellValue.mine) {
+  if (topCell?.state === CellState.closed && topCell.value !== CellValue.mine) {
     if (topCell.value === CellValue.none) {
       newCells = openAdjacentCells(newCells, rowParam - 1, colParam);
     } else {
-      newCells[rowParam - 1][colParam].state = CellState.visible;
+      newCells[rowParam - 1][colParam].state = CellState.revealed;
     }
   }
-  if (topRightCell?.state === CellState.open && topRightCell.value !== CellValue.mine) {
+  if (topRightCell?.state === CellState.closed && topRightCell.value !== CellValue.mine) {
     if (topRightCell.value === CellValue.none) {
       newCells = openAdjacentCells(newCells, rowParam - 1, colParam + 1);
     } else {
-      newCells[rowParam - 1][colParam + 1].state = CellState.visible;
+      newCells[rowParam - 1][colParam + 1].state = CellState.revealed;
     }
   }
-  if (leftCell?.state === CellState.open && leftCell.value !== CellValue.mine) {
+  if (leftCell?.state === CellState.closed && leftCell.value !== CellValue.mine) {
     if (leftCell.value === CellValue.none) {
       newCells = openAdjacentCells(newCells, rowParam, colParam - 1);
     } else {
-      newCells[rowParam][colParam - 1].state = CellState.visible;
+      newCells[rowParam][colParam - 1].state = CellState.revealed;
     }
   }
-  if (rightCell?.state === CellState.open && rightCell.value !== CellValue.mine) {
+  if (rightCell?.state === CellState.closed && rightCell.value !== CellValue.mine) {
     if (rightCell.value === CellValue.none) {
       newCells = openAdjacentCells(newCells, rowParam, colParam + 1);
     } else {
-      newCells[rowParam][colParam + 1].state = CellState.visible;
+      newCells[rowParam][colParam + 1].state = CellState.revealed;
     }
   }
-  if (bottomLeftCell?.state === CellState.open && bottomLeftCell.value !== CellValue.mine) {
+  if (bottomLeftCell?.state === CellState.closed && bottomLeftCell.value !== CellValue.mine) {
     if (bottomLeftCell.value === CellValue.none) {
       newCells = openAdjacentCells(newCells, rowParam + 1, colParam - 1);
     } else {
-      newCells[rowParam + 1][colParam - 1].state = CellState.visible;
+      newCells[rowParam + 1][colParam - 1].state = CellState.revealed;
     }
   }
-  if (bottomCell?.state === CellState.open && bottomCell.value !== CellValue.mine) {
+  if (bottomCell?.state === CellState.closed && bottomCell.value !== CellValue.mine) {
     if (bottomCell.value === CellValue.none) {
       newCells = openAdjacentCells(newCells, rowParam + 1, colParam);
     } else {
-      newCells[rowParam + 1][colParam].state = CellState.visible;
+      newCells[rowParam + 1][colParam].state = CellState.revealed;
     }
   }
-  if (bottomRightCell?.state === CellState.open && bottomRightCell.value !== CellValue.mine) {
+  if (bottomRightCell?.state === CellState.closed && bottomRightCell.value !== CellValue.mine) {
     if (bottomRightCell.value === CellValue.none) {
-      newCells = openAdjacentCells(newCells, rowParam - 1, colParam + 1);
+      newCells = openAdjacentCells(newCells, rowParam + 1, colParam + 1);
     } else {
-      newCells[rowParam - 1][colParam + 1].state = CellState.visible;
+      newCells[rowParam + 1][colParam + 1].state = CellState.revealed;
     }
   }
 

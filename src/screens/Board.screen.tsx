@@ -1,19 +1,25 @@
 import React, {useState, useEffect} from 'react';
-import {View, StyleSheet, Text, Dimensions, Alert} from 'react-native';
+import {View, StyleSheet, Alert} from 'react-native';
 import {Cell} from '../components/Cell.component';
 import Header from '../components/Header.component';
 import {CellModel, CellValue, CellState} from '../models/Cell.model';
 import {generateCells, openAdjacentCells} from '../utils/methods';
-import {width, height, MINES} from '../utils/constants';
+import {width, height, MAX_ROWS, MAX_COLS} from '../utils/constants';
 import {FaceEnum} from '../models/Face.model';
 
-interface Props {}
-export const Board: React.FC<Props> = (Props) => {
-  const [cells, setCells] = useState<CellModel[][]>(generateCells());
+interface Props {
+  route: {key: string; name: string; params: {mines: number}};
+}
+export const Board: React.FC<Props> = ({route}) => {
+  const mines = route.params.mines;
+  const [cells, setCells] = useState<CellModel[][]>(generateCells(mines));
   const [face, setFace] = useState<FaceEnum>(FaceEnum.smile);
   const [timer, setTimer] = useState<number>(0);
   const [gameStart, setGameStart] = useState<boolean>(false);
-  const [mineCounter, setMineCounter] = useState<number>(MINES);
+  const [mineCounter, setMineCounter] = useState<number>(mines);
+  const [gameOver, setGameOver] = useState<boolean>(false);
+  const [wonGame, setWonGame] = useState<boolean>(false);
+
   useEffect(() => {
     if (gameStart && timer < 999) {
       const time = setInterval(() => {
@@ -25,13 +31,43 @@ export const Board: React.FC<Props> = (Props) => {
     }
   }, [gameStart, timer]);
 
-  const onRestartGame = (): void => {
-    if (gameStart) {
+  useEffect(() => {
+    if (gameOver) {
+      setFace(FaceEnum.dead);
       setGameStart(false);
-      setTimer(0);
-      setCells(generateCells());
-      setMineCounter(MINES);
     }
+  }, [gameOver, face]);
+
+  useEffect(() => {
+    if (wonGame) {
+      setFace(FaceEnum.won);
+      setGameStart(false);
+    }
+  }, [wonGame]);
+
+  const onRestartGame = (): void => {
+    setGameStart(false);
+    setTimer(0);
+    setCells(generateCells(mines));
+    setMineCounter(mines);
+    setGameOver(false);
+    setFace(FaceEnum.smile);
+    setWonGame(false);
+  };
+
+  const showAllBombs = (): CellModel[][] => {
+    const currentCells = cells.slice();
+    return currentCells.map((row, rowIndex) =>
+      row.map((col, colIndex) => {
+        if (col.value === CellValue.mine) {
+          return {
+            ...col,
+            state: CellState.revealed,
+          };
+        }
+        return col;
+      }),
+    );
   };
   const onFaceChange = () => {
     if (face === FaceEnum.smile) setFace(FaceEnum.surprise);
@@ -43,23 +79,71 @@ export const Board: React.FC<Props> = (Props) => {
     const currentCell = cells[rowParam][colParam];
     //set game start
     if (!gameStart) {
+      if (currentCell.value === CellValue.mine) {
+        Alert.alert(
+          'Oh no you clicked a bomb :(',
+          `Let's restart the game!`,
+          [{text: 'OK', onPress: () => onRestartGame()}],
+          {cancelable: false},
+        );
+      }
       setGameStart(true);
     }
 
     // If cell is flagged or visible don't do anything
-    if ([CellState.flagged, CellState.visible].includes(currentCell.state)) {
+    if (
+      [CellState.flagged, CellState.revealed, CellState.unknown].includes(
+        currentCell.state,
+      )
+    ) {
       return;
     }
+
     if (currentCell.value === CellValue.mine) {
-      //Chequear que no haya una bomba al inicio
+      setGameOver(true);
+      currentBoard = showAllBombs();
+      currentBoard[rowParam][colParam].selectedBomb = true;
+      setCells(currentBoard);
     } else if (currentCell.value === CellValue.none) {
       currentBoard = openAdjacentCells(currentBoard, rowParam, colParam);
       setCells(currentBoard);
     } else {
-      currentBoard[rowParam][colParam].state = CellState.visible;
-      console.log(currentBoard);
-      setCells(currentBoard);
+      currentBoard[rowParam][colParam].state = CellState.revealed;
     }
+
+    // Check if every non mine cell is opened and check if you won the game
+
+    let safeOpenCellsExists = false;
+    for (let row = 0; row < MAX_ROWS; row++) {
+      for (let col = 0; col < MAX_COLS; col++) {
+        const currentCell = currentBoard[row][col];
+
+        if (
+          currentCell.value !== CellValue.mine &&
+          currentCell.state === CellState.closed
+        ) {
+          safeOpenCellsExists = true;
+          break;
+        }
+      }
+    }
+
+    if (!safeOpenCellsExists) {
+      currentBoard = currentBoard.map((row) =>
+        row.map((col) => {
+          if (col.value === CellValue.mine) {
+            return {
+              ...col,
+              state: CellState.flagged,
+            };
+          }
+          return col;
+        }),
+      );
+      setWonGame(true);
+    }
+
+    setCells(currentBoard);
   };
 
   const handleFlag = (rowParam: number, colParam: number) => () => {
@@ -74,14 +158,17 @@ export const Board: React.FC<Props> = (Props) => {
         {cancelable: false},
       );
     } else {
-      if (currentCell.state === CellState.visible) {
+      if (currentCell.state === CellState.revealed) {
         return;
-      } else if (currentCell.state === CellState.open) {
+      } else if (currentCell.state === CellState.closed) {
         currentCells[rowParam][colParam].state = CellState.flagged;
         setCells(currentCells);
         setMineCounter(mineCounter - 1);
+      } else if (currentCell.state === CellState.flagged) {
+        currentCells[rowParam][colParam].state = CellState.unknown;
+        setCells(currentCells);
       } else {
-        currentCells[rowParam][colParam].state = CellState.open;
+        currentCells[rowParam][colParam].state = CellState.closed;
         setMineCounter(mineCounter + 1);
       }
     }
@@ -100,6 +187,7 @@ export const Board: React.FC<Props> = (Props) => {
           onCellPressOut={onFaceChange}
           onOpenCell={onOpenCell}
           onLongPressCell={handleFlag}
+          selectedBomb={col.selectedBomb}
         />
       )),
     );

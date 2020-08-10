@@ -8,7 +8,6 @@ interface FaceProps {
 }
 export const Face: React.FC<FaceProps> = ({face, onRestart}) => {
   const faceStyles: any[] = [styles.container];
-
   return (
     <TouchableOpacity onPress={onRestart}>
       <View style={faceStyles}>

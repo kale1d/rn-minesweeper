@@ -12,12 +12,14 @@ import {CellState, CellValue} from '../models/Cell.model';
 
 const mine = require('./../assets/images/bomb.png');
 const flag = require('./../assets/images/flag.png');
+const unknown = require('./../assets/images/unknown.png');
 
 type CellProps = {
   row: number;
   col: number;
   state: CellState;
   value: CellValue;
+  selectedBomb?: boolean;
   onCellPressIn: () => void;
   onCellPressOut: () => void;
   onOpenCell(
@@ -34,6 +36,7 @@ export const Cell: React.FC<CellProps> = ({
   col,
   state,
   value,
+  selectedBomb,
   onCellPressIn,
   onCellPressOut,
   onOpenCell,
@@ -41,15 +44,15 @@ export const Cell: React.FC<CellProps> = ({
 }) => {
   const cellByKindStyle: any[] = [styles.cell];
   const textColor: any[] = [styles.text];
-
   if (value === CellValue.one) textColor.push(styles.blue);
   if (value === CellValue.two) textColor.push(styles.green);
   if (value === CellValue.three) textColor.push(styles.red);
   if (value === CellValue.four) textColor.push(styles.purple);
   const renderCell = (): React.ReactNode => {
-    if (state === CellState.visible) {
+    if (state === CellState.revealed) {
       cellByKindStyle.push(styles.opened);
       if (value === CellValue.mine) {
+        if (selectedBomb) cellByKindStyle.push(styles.bgRed);
         return <Image style={{width: 35, height: 35}} source={mine} />;
       } else if (value === CellValue.none) {
         return null;
@@ -58,6 +61,16 @@ export const Cell: React.FC<CellProps> = ({
     } else if (state === CellState.flagged) {
       //Add Flag
       return <Image style={{width: 35, height: 35}} source={flag} />;
+    } else if (state === CellState.unknown) {
+      return (
+        <Image
+          style={{
+            width: 20,
+            height: 20,
+          }}
+          source={unknown}
+        />
+      );
     }
     return null;
   };
@@ -95,6 +108,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#fff',
     borderLeftColor: '#7b7b7b',
     borderTopColor: '#7b7b7b',
+  },
+  bgRed: {
+    backgroundColor: 'red',
   },
   text: {
     textAlign: 'center',

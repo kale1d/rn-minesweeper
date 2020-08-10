@@ -1,15 +1,39 @@
+import 'react-native-gesture-handler';
 import React from 'react';
-import {SafeAreaView, StatusBar} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
 import {Board} from './src/screens/Board.screen';
+import {Home} from './src/screens/Home.screen';
+
+type RootStackParamList = {
+  Home: undefined;
+  Game: {mines: number};
+};
+
+const Stack = createStackNavigator<RootStackParamList>();
 
 const App = () => {
   return (
-    <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView style={{flex: 1}}>
-        <Board />
-      </SafeAreaView>
-    </>
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen
+          name="Home"
+          component={Home}
+          options={{title: 'Game Options'}}
+        />
+        <Stack.Screen
+          name="Game"
+          component={Board}
+          options={{title: 'MineSweeper'}}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+    // <>
+    //   <StatusBar barStyle="dark-content" />
+    //   <SafeAreaView style={{flex: 1}}>
+    //     <Board />
+    //   </SafeAreaView>
+    // </>
   );
 };
 
