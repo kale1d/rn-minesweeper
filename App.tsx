@@ -28,12 +28,6 @@ const App = () => {
         />
       </Stack.Navigator>
     </NavigationContainer>
-    // <>
-    //   <StatusBar barStyle="dark-content" />
-    //   <SafeAreaView style={{flex: 1}}>
-    //     <Board />
-    //   </SafeAreaView>
-    // </>
   );
 };
 

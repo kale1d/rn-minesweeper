@@ -42,6 +42,13 @@ export const Board: React.FC<Props> = ({route}) => {
     if (wonGame) {
       setFace(FaceEnum.won);
       setGameStart(false);
+      setMineCounter(0);
+      Alert.alert(
+        'You Win',
+        'Congrats:)',
+        [{text: 'OK', onPress: () => onRestartGame()}],
+        {cancelable: false},
+      );
     }
   }, [wonGame]);
 
