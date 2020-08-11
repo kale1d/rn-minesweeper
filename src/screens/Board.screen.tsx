@@ -6,10 +6,12 @@ import {CellModel, CellValue, CellState} from '../models/Cell.model';
 import {generateCells, openAdjacentCells} from '../utils/methods';
 import {width, height, MAX_ROWS, MAX_COLS} from '../utils/constants';
 import {FaceEnum} from '../models/Face.model';
+import {Route} from '../models/Route.model';
 
 interface Props {
-  route: {key: string; name: string; params: {mines: number}};
+  route: Route;
 }
+
 export const Board: React.FC<Props> = ({route}) => {
   const mines = route.params.mines;
   const [cells, setCells] = useState<CellModel[][]>(generateCells(mines));
@@ -82,7 +84,7 @@ export const Board: React.FC<Props> = ({route}) => {
   };
 
   const onOpenCell = (rowParam: number, colParam: number) => () => {
-    let currentBoard = cells.slice();
+    let newCells = cells.slice();
     const currentCell = cells[rowParam][colParam];
     //set game start
     if (!gameStart) {
@@ -108,14 +110,14 @@ export const Board: React.FC<Props> = ({route}) => {
 
     if (currentCell.value === CellValue.mine) {
       setGameOver(true);
-      currentBoard = showAllBombs();
-      currentBoard[rowParam][colParam].selectedBomb = true;
-      setCells(currentBoard);
+      newCells = showAllBombs();
+      newCells[rowParam][colParam].selectedBomb = true;
+      setCells(newCells);
     } else if (currentCell.value === CellValue.none) {
-      currentBoard = openAdjacentCells(currentBoard, rowParam, colParam);
-      setCells(currentBoard);
+      newCells = openAdjacentCells(newCells, rowParam, colParam);
+      setCells(newCells);
     } else {
-      currentBoard[rowParam][colParam].state = CellState.revealed;
+      newCells[rowParam][colParam].state = CellState.revealed;
     }
 
     // Check if every non mine cell is opened and check if you won the game
@@ -123,7 +125,7 @@ export const Board: React.FC<Props> = ({route}) => {
     let safeOpenCellsExists = false;
     for (let row = 0; row < MAX_ROWS; row++) {
       for (let col = 0; col < MAX_COLS; col++) {
-        const currentCell = currentBoard[row][col];
+        const currentCell = newCells[row][col];
 
         if (
           currentCell.value !== CellValue.mine &&
@@ -136,7 +138,7 @@ export const Board: React.FC<Props> = ({route}) => {
     }
 
     if (!safeOpenCellsExists) {
-      currentBoard = currentBoard.map((row) =>
+      newCells = newCells.map((row) =>
         row.map((col) => {
           if (col.value === CellValue.mine) {
             return {
@@ -150,7 +152,7 @@ export const Board: React.FC<Props> = ({route}) => {
       setWonGame(true);
     }
 
-    setCells(currentBoard);
+    setCells(newCells);
   };
 
   const handleFlag = (rowParam: number, colParam: number) => () => {

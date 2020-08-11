@@ -1,0 +1,1 @@
+export type Route = { key: string; name: string; params: { mines: number } }

@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 import {NumberDisplay} from './NumberDisplay.component';
 import {Face} from './Face.component';
 import {FaceEnum} from '../models/Face.model';

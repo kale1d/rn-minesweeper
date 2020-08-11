@@ -1,12 +1,8 @@
 import React from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import {TouchableHighlight} from 'react-native-gesture-handler';
-import {width} from '../utils/constants';
 
-interface Props {}
-
-export const Home: React.FC<Props> = (Props) => {
+export const Home: React.FC = () => {
   const navigation = useNavigation();
 
   return (

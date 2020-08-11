@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {Image, View, StyleSheet, TouchableOpacity} from 'react-native';
 import {FaceEnum} from '../models/Face.model';
 
